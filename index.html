@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DoctorFlix | A Special Feature</title>
+<style>
+    :root {
+        --nf-red: #E50914;
+        --nf-black: #141414;
+        --nf-dark-grey: #181818;
+        --nf-white: #FFFFFF;
+        --nf-green: #46d369;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        background-color: var(--nf-black);
+        color: var(--nf-white);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        line-height: 1.4;
+        overflow-x: hidden;
+    }
+
+    header {
+        padding: 20px 40px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        position: fixed;
+        width: 100%;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo { color: var(--nf-red); font-weight: bold; font-size: 1.8rem; letter-spacing: -1px; }
+    
+    .watermark { 
+        font-size: 0.9rem; 
+        color: rgba(255, 255, 255, 0.5); 
+        font-weight: 300; 
+        letter-spacing: 1px;
+    }
+
+    /* Hero Section */
+    .hero {
+        height: 85vh;
+        background: linear-gradient(to top, var(--nf-black) 5%, transparent 60%),
+                    linear-gradient(to right, rgba(0,0,0,0.8), transparent),
+                    url('http://googleusercontent.com/image_collection/image_retrieval/7137843753382583852_0');
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); max-width: 800px; margin-bottom: 10px; line-height: 1.1; }
+    .hero p { font-size: 1.2rem; max-width: 550px; color: #d2d2d2; margin-bottom: 25px; }
+
+    .stethoscope { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+
+    .vitals-row {
+        display: flex;
+        gap: 15px;
+        padding: 0 40px;
+        margin-top: -60px;
+        position: relative;
+        z-index: 10;
+        flex-wrap: wrap;
+    }
+
+    .vital-card {
+        background: rgba(30, 30, 30, 0.95);
+        padding: 20px 10px;
+        border-radius: 4px;
+        border-bottom: 3px solid var(--nf-red);
+        flex: 1 1 180px;
+        text-align: center;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        min-width: 160px;
+    }
+
+    .vital-card small { color: #808080; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
+    .vital-card h3 { color: var(--nf-green); font-size: 1.4rem; margin-top: 5px; white-space: nowrap; }
+
+    .row { padding: 60px 0 0 40px; }
+    .row h2 { font-size: 1.5rem; margin-bottom: 20px; font-weight: 500; color: #e5e5e5; }
+    
+    .card-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        padding-bottom: 30px;
+        padding-right: 40px;
+    }
+
+    .card-container::-webkit-scrollbar { display: none; }
+
+    /* Card with image and overlay */
+    .card {
+        min-width: 240px;
+        height: 340px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 4px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        display: flex;
+        align-items: flex-end;
+        overflow: hidden;
+        border: 1px solid #333;
+    }
+
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 30%, transparent 70%);
+        z-index: 1;
+    }
+
+    .card-overlay {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        text-align: left;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 0 0 4px 4px;
+    }
+
+    .card:hover { transform: scale(1.08); z-index: 2; border-color: #666; }
+
+    .top10 { 
+        position: absolute; 
+        top: 10px; 
+        right: 10px; 
+        background: var(--nf-red); 
+        padding: 6px 10px; 
+        font-size: 0.8rem; 
+        font-weight: bold;
+        z-index: 3; /* above overlay */
+        border-radius: 0 4px 4px 0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .note-container {
+        background: rgba(255,255,255,0.03);
+        margin: 40px;
+        padding: 50px;
+        border-radius: 8px;
+        border-left: 5px solid var(--nf-red);
+        max-width: 900px;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.92);
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+        background: var(--nf-dark-grey);
+        margin: 5% auto;
+        width: 90%;
+        max-width: 700px;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        animation: slideUp 0.5s ease;
+    }
+
+    .modal-header-img { height: 300px; background-size: cover; background-position: center; position: relative; }
+    .modal-body { padding: 40px; }
+
+    @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .close { position: absolute; right: 25px; top: 15px; font-size: 40px; cursor: pointer; color: white; z-index: 10; }
+    
+    .btn { padding: 12px 30px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; font-size: 1rem; margin-top: 10px; }
+    .btn-white { background: white; color: black; transition: 0.2s; }
+    .btn-white:hover { background: #dcdcdc; }
+
+    #autoplay-text { color: var(--nf-green); font-weight: bold; min-height: 1.5em; letter-spacing: 0.5px; }
+
+    .credits {
+        text-align: center;
+        padding: 80px 0;
+        opacity: 0.4;
+        font-size: 0.8rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo">DOCTORFLIX</div>
+    <div class="watermark">🏹cupidcrafted</div>
+</header>
+
+<section class="hero">
+    <span class="stethoscope">🩺</span>
+    <p id="autoplay-text"></p>
+    <h1>Tonight’s Feature:<br>A Very Special Human</h1>
+    <p>Some people treat patients. Some treat conversations. You do both exceptionally.</p>
+    <div>
+        <button class="btn btn-white">▶ Start Episode</button>
+        <button class="btn" style="background: rgba(109,109,110,0.7); color: white; margin-left: 10px;">💾 Save to Favorites</button>
+    </div>
+</section>
+
+<section class="vitals-row">
+    <div class="vital-card"><small>Ambition</small><h3>110%</h3></div>
+    <div class="vital-card"><small>Wit Level</small><h3>Elite</h3></div>
+    <div class="vital-card"><small>Voice Quality</small><h3>HD Surround</h3></div>
+    <div class="vital-card"><small>Status</small><h3>Overachieving</h3></div>
+</section>
+
+<!-- Trending Titles Section with Netflix-style overlay and badge -->
+<section class="row">
+    <h2>🧑‍⚕️ Trending Titles</h2>
+    <div class="card-container">
+        <div class="card" 
+             style="background-image: url('https://cupidcrafted.github.io/Client-pictures/Pic3.JPG');"
+             onclick="openShow('The Voice Advantage', 'Comfort / Science', 'A study on how one person can sound like calm, confidence, and trouble for boring days.', 'http://googleusercontent.com/image_collection/image_retrieval/11566976527833846455_0')">
+            <div class="card-overlay">
+                <strong>The Voice Advantage</strong>
+            </div>
+            <div class="top10">#1</div>
+        </div>
+
+        <div class="card" 
+             style="background-image: url('https://cupidcrafted.github.io/Client-pictures/Pic2.JPG');"
+             onclick="openShow('Ambition: No Days Off', 'Documentary', 'Follow the journey of a man who looked at average and respectfully declined.', 'http://googleusercontent.com/image_collection/image_retrieval/208173704008327234_0')">
+            <div class="card-overlay">
+                <strong>Ambition: No Days Off</strong>
+            </div>
+        </div>
+
+        <div class="card" 
+             style="background-image: url('https://cupidcrafted.github.io/Client-pictures/Pic1.JPG);"
+             onclick="openShow('Comedy in Scrubs', 'Sitcom', 'Saving lives but also saving everyone from dull moments.', 'http://googleusercontent.com/image_collection/image_retrieval/16092202929980744901_0')">
+            <div class="card-overlay">
+                <strong>Comedy in Scrubs</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Rest of your page unchanged -->
+
+<section class="row">
+    <h2>❤️ Because excellence deserves reruns</h2>
+    <div class="card-container">
+        <div class="card" style="min-width: 300px; height: 180px; background: #222;">
+            <div style="z-index: 1; width: 100%;">
+                <small style="color: #888;">Episode 1: Brilliance</small>
+                <p style="margin: 5px 0;">You casually being brilliant</p>
+                <div style="height: 4px; background: #444; width: 100%;"><div style="height:100%; width: 95%; background: var(--nf-red);"></div></div>
+            </div>
+        </div>
+        <div class="card" style="min-width: 300px; height: 180px; background: #222;">
+            <div style="z-index: 1; width: 100%;">
+                <small style="color: #888;">Episode 2: Vibe</small>
+                <p style="margin: 5px 0;">Conversations where I just enjoy the vibe</p>
+                <div style="height: 4px; background: #444; width: 100%;"><div style="height:100%; width: 80%; background: var(--nf-red);"></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row">
+    <h2>🏥 Staff Picks: Highly Recommended Human</h2>
+    <div class="vitals-row" style="margin-top: 0; padding: 0;">
+        <div class="vital-card" style="border-bottom-color: #56d4ff;"><small>Work Ethic</small><h3>Unreasonably Strong</h3></div>
+        <div class="vital-card" style="border-bottom-color: #bb86fc;"><small>Presence</small><h3>Felt</h3></div>
+        <div class="vital-card" style="border-bottom-color: var(--nf-red);"><small>Voice</small><h3>Warning Label Needed</h3></div>
+    </div>
+</section>
+
+<section class="note-container">
+    <h2 style="color: var(--nf-red); margin-bottom: 25px;">💌 Main Valentine Note</h2>
+    <p style="font-size: 1.25rem; line-height: 1.8; color: #f0f0f0;">
+        Not every hero wears a cape. Some wear scrubs and deliver punchlines with a perfect voice setting.<br><br>
+        You have this way of being sharp, driven, and focused, yet still light enough to make people relax around you. That’s rare.<br><br>
+        The ambition? <strong>Loud.</strong><br>
+        The intelligence? <strong>Obvious.</strong><br>
+        The energy? <strong>Comforting in a way that sneaks up on you.</strong><br><br>
+        I just want you to know you’re appreciated for who you are, what you’re becoming, and the calm confidence you carry into rooms (and phone speakers).<br><br>
+        Happy Valentine’s Day to a genuinely solid human and an amazing being.
+    </p>
+</section>
+
+<section class="row" style="text-align: center; margin-bottom: 50px;">
+    <div id="unlock-area" style="background: #111; padding: 60px; border-radius: 8px; border: 1px dashed #444; margin-right: 40px;">
+        <button class="btn btn-white" id="unlock-btn" onclick="unlock()">🔓 Unlock Hidden Content</button>
+        <div id="secret-msg" style="display: none;">
+            <h2 style="color: var(--nf-green); margin-bottom: 10px;">🎁 Hidden Content</h2>
+            <p style="font-size: 1.3rem;">"You’re doing amazing. Don’t slow down. The world is already taking notes."</p>
+        </div>
+    </div>
+</section>
+
+<div class="credits">Lead Role: You &nbsp; | &nbsp; Proud Supporter: Me</div>
+
+<div id="detailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modalImg" class="modal-header-img"></div>
+        <div class="modal-body">
+            <span style="color: var(--nf-green); font-weight: bold;">99% Match</span>
+            <h2 id="modalTitle" style="margin: 10px 0; font-size: 2.2rem;"></h2>
+            <p id="modalGenre" style="color: #aaa; margin-bottom: 20px; font-size: 0.9rem;"></p>
+            <p id="modalSynopsis" style="line-height: 1.6; font-size: 1.1rem; color: #ddd;"></p>
+            <button class="btn btn-white" onclick="closeModal()">▶ Resume</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const text = "In a world where lives are saved daily... one doctor deserves a little care too.";
+    let charIndex = 0;
+    function type() {
+        if (charIndex < text.length) {
+            document.getElementById("autoplay-text").innerHTML += text.charAt(charIndex);
+            charIndex++;
+            setTimeout(type, 50);
+        }
+    }
+    window.onload = type;
+
+    function openShow(title, genre, synopsis, imgUrl) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalGenre').innerText = genre;
+        document.getElementById('modalSynopsis').innerText = synopsis;
+        document.getElementById('modalImg').style.backgroundImage = `linear-gradient(to top, var(--nf-dark-grey), transparent), url('${imgUrl}')`;
+        document.getElementById('detailsModal').style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+        document.getElementById('detailsModal').style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+
+    function unlock() {
+        document.getElementById('unlock-btn').style.display = 'none';
+        document.getElementById('secret-msg').style.display = 'block';
+    }
+
+    window.onclick = function(e) { if (e.target.className === 'modal') closeModal(); }
+</script>
+
+</body>
+</html>
